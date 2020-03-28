@@ -1,21 +1,37 @@
 module Lib
-    ( cycles,
-      boot
-    ) where
+  ( cycles
+  , boot
+  )
+where
 
-import Data.Word (Word32)
+import           Data.Word                      ( Word32 )
+import           RegisterFile
+import           Memory
 
-data Registers = Registers { pc :: Word32 }
-    deriving (Read, Show, Eq)
-cpu_cycle regs =  Registers new_pc where
-    new_pc = (pc regs) + 4
+data Registers = Registers {
+    rf:: RegisterFile
+  , mem :: Memory
+  , pc :: Word32
+  } deriving (Show)
 
+
+cpu_cycle regs = Registers new_rf new_mem new_pc where
+  new_pc  = (pc regs) + 4
+  new_rf  = (rf regs)
+  new_mem = (mem regs)
+
+-- initial register set
 boot :: Registers
-boot = Registers 0
+boot = Registers bootRF bootMem 0
 
+-- debug current cycle information
+debug_cycle regs = do
+  putStrLn $ "PC = " ++ show (pc regs)
+  putStrLn $ show (rf regs)
+
+-- run n cycles
 cycles :: Registers -> Int -> IO ()
-cycles regs 0 = putStrLn "Done."
-cycles regs times = do 
-    let new_regs = cpu_cycle regs
-    putStrLn $ show  new_regs
-    cycles new_regs (times - 1)
+cycles regs 0     = debug_cycle regs
+cycles regs times = do
+  debug_cycle regs
+  cycles (cpu_cycle regs) (times - 1)
