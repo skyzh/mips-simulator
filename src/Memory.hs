@@ -10,9 +10,11 @@ import           Data.Vector                    ( replicate
 data Memory = Memory (Vector Word8)
   deriving(Show)
 
+defaultMemSize = 2 ^ 16
+
 -- 64KiB of memory
 bootMem :: Memory
-bootMem = Memory (replicate (2 ^ 16) 0)
+bootMem = Memory (replicate defaultMemSize 0)
 
 convertMemSize :: (Integral a) => (Integral b) => a -> b
 convertMemSize = fromInteger . fromIntegral

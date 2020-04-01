@@ -10,6 +10,7 @@ import           Memory
 import           Data.Vector                    ( (//) )
 import           Debug.Trace
 import           Data.Bits
+import           Utils
 
 data Registers = Registers {
     rf :: RegisterFile -- register file
@@ -40,17 +41,24 @@ mux False a b = a
 mux True  a b = b
 
 -- run one cycle
-cpu_cycle regs = trace ("opcode" ++ show decode_opcode) Registers new_rf imem' new_dmem new_pc where
+cpu_cycle regs = trace ("opcode" ++ show decode_opcode)
+                       Registers
+                       new_rf
+                       imem'
+                       new_dmem
+                       new_pc where
   imem'          = imem regs
   new_dmem       = dmem regs
+
   -- instruction memory and instruction fetch
-  pc' = pc regs
+  pc'            = pc regs
   imem_addr      = pc'
   imem_read_size = 32
   imem_data      = readMem imem' imem_addr imem_read_size
+
   -- decode
   decode_opcode  = imem_data `shiftR` 26
-  
+
   -- register file operations
   rf'            = rf regs
   rf_rs1         = 0
@@ -60,6 +68,12 @@ cpu_cycle regs = trace ("opcode" ++ show decode_opcode) Registers new_rf imem' n
   rf_write       = True
   rf_out1        = readRF rf' rf_rs1
   rf_out2        = readRF rf' rf_rs2
+
+  -- execute
+
+  -- memory
+
+  -- write back
 
   -- these values shouldn't be read
   new_rf = mux rf_write rf' new_rf' where new_rf' = updateRF rf' rf_rt rf_data

@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 1a0c36acc44fdf8749cffab776a27bc0bee70aaf735786338bb41bda7e4f73f1
+-- hash: a3faf576e2c84621122ef5620e3d4be517ef64e5f5872f90d49a7074caaf35e1
 
 name:           mips-simulator-hs
 version:        0.1.0.0
@@ -29,12 +29,14 @@ library
       Lib
       Memory
       RegisterFile
+      Utils
   other-modules:
       Paths_mips_simulator_hs
   hs-source-dirs:
       src
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , vector
   default-language: Haskell2010
 
@@ -46,7 +48,8 @@ executable mips-simulator-hs-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , mips-simulator-hs
     , vector
   default-language: Haskell2010
@@ -60,7 +63,8 @@ test-suite mips-simulator-hs-test
       test
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      base >=4.7 && <5
+      HUnit
+    , base >=4.7 && <5
     , mips-simulator-hs
     , vector
   default-language: Haskell2010
