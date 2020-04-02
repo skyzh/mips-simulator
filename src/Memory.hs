@@ -29,3 +29,4 @@ readMem (Memory mem) addr 32 =
   (b 3) * 2 ^ 24 + (b 2) * 2 ^ 16 + (b 1) * 2 ^ 8 + (b 0) where
   b :: Word32 -> Word32
   b p = convertMemSize $ mem ! fromIntegral (addr + p)
+readMem _ _ sz = error "mem: unsupported word size " ++ show sz
