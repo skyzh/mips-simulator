@@ -17,7 +17,7 @@ bootMem :: Memory
 bootMem = Memory (replicate defaultMemSize 0)
 
 convertMemSize :: (Integral a) => (Integral b) => a -> b
-convertMemSize = fromInteger . fromIntegral
+convertMemSize = fromIntegral
 
 -- assume little endian memory
 readMem :: Memory -> Word32 -> Int -> Word32

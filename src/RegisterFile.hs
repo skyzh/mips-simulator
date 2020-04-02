@@ -9,8 +9,9 @@ data RegisterFile = RegisterFile (Vector Word32)
 bootRF :: RegisterFile
 bootRF = RegisterFile (replicate 32 0)
 
-readRF :: RegisterFile -> Int -> Word32
-readRF (RegisterFile rf) rid = rf ! rid
+readRF :: RegisterFile -> Word32 -> Word32
+readRF (RegisterFile rf) 0 = 0
+readRF (RegisterFile rf) rid = rf ! (fromIntegral rid)
 
-updateRF :: RegisterFile -> Int -> Word32 -> RegisterFile
-updateRF (RegisterFile rf) rid rdata = RegisterFile $ rf // [(rid, rdata)]
+updateRF :: RegisterFile -> Word32 -> Word32 -> RegisterFile
+updateRF (RegisterFile rf) rid rdata = RegisterFile $ rf // [(fromIntegral rid, rdata)]

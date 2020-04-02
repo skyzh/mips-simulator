@@ -22,10 +22,10 @@ parseMem content = parse (lines content) (replicate defaultMemSize 0) 0 where
   update' :: String -> Vector Word8 -> Int -> Vector Word8
   update' hex mem addr =
     mem
-      // [ (addr    , byte 3)
-         , (addr + 1, byte 2)
-         , (addr + 2, byte 1)
-         , (addr + 3, byte 0)
+      // [ (addr    , byte 0)
+         , (addr + 1, byte 1)
+         , (addr + 2, byte 2)
+         , (addr + 3, byte 3)
          ]   where
     datax :: Int
     datax = let [(x, _)] = readHex hex in x

@@ -15,7 +15,11 @@
         {
             "label": "stack run",
             "type": "shell",
-            "command": "stack run"
+            "command": "stack run",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
         }
     ]
 }
