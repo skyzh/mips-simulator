@@ -38,35 +38,62 @@ cycles regs times = do
   debug_cycle regs
   cycles (cpu_cycle regs) (times - 1)
 
--- mux
-mux :: Bool -> a -> a -> a
-mux False a b = a
-mux True  a b = b
-
 -- run one cycle
 cpu_cycle regs = trace debug_info (Registers new_rf imem' new_dmem new_pc) where
   imem'          = imem regs
   new_dmem       = dmem regs
 
-  -- instruction memory and instruction fetch
+  -- STAGE: Instruction Fetch
   pc'            = pc regs
   imem_addr      = pc'
   imem_read_size = 32
   instruction    = readMem imem' imem_addr imem_read_size
 
-  -- decode
+  -- STAGE: Decode
   opcode         = instruction `shiftR` 26
   rs             = instruction `shiftR` (26 - 5) .&. 0x1f
   rt             = instruction `shiftR` (26 - 10) .&. 0x1f
   rd             = instruction `shiftR` (26 - 15) .&. 0x1f
   funct          = instruction .&. 0x3f
+  imm            = fromIntegral instruction .&. 0xffff
+  imm_sign_ext   = signExt imm
+  imm_zero_ext   = zeroExt imm
+  typeR          = opcode == 0
+
+  -- register file operations
+  rf'            = rf regs
+  rf_src1        = rs
+  rf_src2        = if typeR then rt else 0
+  rf_dest        = if typeR then rd else rt
+  rf_data        = alu_out
+  rf_write       = True
+  rf_out1        = readRF rf' rf_src1
+  rf_out2        = readRF rf' rf_src2
+
+  -- STAGE: Execute
+  alu_op         = if typeR then funct else opcode
+  ext_mode       = extMode alu_op
+  alu_imm        = if ext_mode then imm_sign_ext else imm_zero_ext
+  alu_src1       = rf_out1
+  alu_src2       = if typeR then rf_out2 else alu_imm
+  alu_out        = aluRead alu_op alu_src1 alu_src2
+
+  -- STAGE: memory
+
+  -- STAGE: write back
+
+  -- STEP: type annotation
   imm :: Word16
-  imm        = fromIntegral instruction .&. 0xffff
-  typeR      = opcode == 0
 
-  imm_sign_ext = signExt imm
-  imm_zero_ext = zeroExt imm
+  -- STEP: update register value
+  -- CONSTRAINT: these values shouldn't be read above 
+  --             (even if I do, there'll be dead loop)
+  -- CONSTRAINT: units can only be used once (e.g. aluRead)
+  new_rf = if rf_write then new_rf' else rf'
+    where new_rf' = updateRF rf' rf_dest rf_data
+  new_pc = pc' + 4
 
+  -- STEP: debug info
   debug_info =
     "opcode"
       ++ show opcode
@@ -80,30 +107,3 @@ cpu_cycle regs = trace debug_info (Registers new_rf imem' new_dmem new_pc) where
       ++ show funct
       ++ "imm"
       ++ show imm
-
-  -- register file operations
-  rf'      = rf regs
-  rf_src1  = rs
-  rf_src2  = mux typeR 0 rt
-  rf_dest  = mux typeR rt rd
-  rf_data  = alu_out
-  rf_write = True
-  rf_out1  = readRF rf' rf_src1
-  rf_out2  = readRF rf' rf_src2
-
-  -- execute
-  alu_op = mux typeR opcode funct
-  ext_mode = extMode alu_op
-  alu_imm = mux ext_mode imm_zero_ext imm_sign_ext
-  alu_src1 = rf_out1
-  alu_src2 = mux typeR alu_imm rf_out2
-  alu_out  = aluRead alu_op alu_src1 alu_src2
-
-  -- memory
-
-  -- write back
-
-  -- these values shouldn't be read
-  new_rf   = mux rf_write rf' new_rf'
-    where new_rf' = updateRF rf' rf_dest rf_data
-  new_pc = pc' + 4

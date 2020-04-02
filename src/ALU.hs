@@ -4,6 +4,7 @@ import           Data.Word                      ( Word16
                                                 )
 import           Data.Int                       ( Int16 )
 import           Debug.Trace
+import           Data.Bits
 
 signExt :: Word16 -> Word32
 signExt x = fromIntegral signed where
@@ -31,4 +32,27 @@ aluRead 0x21 x y = x + y
 -- addi
 aluRead 0x8  x y = x + y
 aluRead 0x9  x y = x + y
+-- and
+aluRead 0x24 x y = x .&. y
+-- andi
+aluRead 0x0C x y = x .&. y
+-- div
+aluRead 0x1A x y = error "div"
+-- divu
+aluRead 0x1B x y = error "divu"
+-- mult
+aluRead 0x18 x y = error "mult"
+-- multu
+aluRead 0x19 x y = error "multu"
+-- nor
+aluRead 0x27 x y = complement (x .|. y)
+-- or
+aluRead 0x25 x y = x .|. y
+-- ori
+aluRead 0x0D x y = x .|. y
+-- xor
+aluRead 0x26 x y = x `xor` y
+-- xori
+aluRead 0x0E x y = x `xor` y
+
 aluRead op   _ _ = trace ("unknown opcode " ++ show op) 0
