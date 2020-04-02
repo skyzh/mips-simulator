@@ -13,7 +13,8 @@ course, I made this MIPS simulator.
 * Single-Cycle Processor
     - [x] R type
     - [x] I type
-    - [ ] ALU test
+    - [x] ALU test
+    - [ ] Support HI and LO
     - [ ] J type
     - [ ] Memory operations
 * Multi-Cycle Processor

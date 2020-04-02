@@ -5,8 +5,15 @@ import           Memory
 import           RegisterFile
 
 data Registers = Registers {
-    rf :: RegisterFile -- register file
-  , imem :: Memory    -- instruction memory
-  , dmem :: Memory    -- data memory
-  , pc :: Word32      -- program counter
+    -- register file
+    rf :: RegisterFile
+    -- multiplication hi and lo
+  , hi :: Word32
+  , lo :: Word32
+    -- instruction memory
+  , imem :: Memory
+    -- data memory
+  , dmem :: Memory
+    -- program counter 
+  , pc :: Word32
   } deriving (Show)

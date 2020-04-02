@@ -18,7 +18,7 @@ import           Registers
 
 -- initial register set
 boot :: Memory -> Registers
-boot imem = Registers bootRF imem bootMem 0
+boot imem = Registers bootRF 0 0 imem bootMem 0
 
 -- debug current cycle information
 debug_cycle regs = do
@@ -35,7 +35,7 @@ cycles regs times = do
   cycles (cpu_cycle regs) (times - 1)
 
 -- run one cycle
-cpu_cycle regs = trace debug_info (Registers new_rf imem' new_dmem new_pc) where
+cpu_cycle regs = next_regs where
   imem'          = imem regs
   new_dmem       = dmem regs
 
@@ -88,7 +88,10 @@ cpu_cycle regs = trace debug_info (Registers new_rf imem' new_dmem new_pc) where
   new_rf = if rf_write then new_rf' else rf'
     where new_rf' = updateRF rf' rf_dest rf_data
   new_pc = pc' + 4
-
+  new_hi = hi regs
+  new_lo = lo regs
+  next_regs = trace debug_info (Registers new_rf new_hi new_lo imem' new_dmem new_pc)
+  
   -- STEP: debug info
   debug_info =
     "opcode"
