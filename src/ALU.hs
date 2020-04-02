@@ -1,4 +1,6 @@
 module ALU where
+
+import           Prelude                 hiding ( xor )
 import           Data.Word                      ( Word16
                                                 , Word32
                                                 )
@@ -32,6 +34,10 @@ aluRead 0x21 x y = x + y
 -- addi
 aluRead 0x8  x y = x + y
 aluRead 0x9  x y = x + y
+-- sub
+aluRead 0x22 x y = x - y
+-- subu
+aluRead 0x23 x y = x - y
 -- and
 aluRead 0x24 x y = x .&. y
 -- andi
@@ -54,5 +60,9 @@ aluRead 0x0D x y = x .|. y
 aluRead 0x26 x y = x `xor` y
 -- xori
 aluRead 0x0E x y = x `xor` y
-
-aluRead op   _ _ = trace ("unknown opcode " ++ show op) 0
+--- lui
+aluRead 0x0F x y = y `shiftL` 16 + x
+--- other op
+aluRead 0    _ _ = 0
+aluRead op _ _ =
+  trace ("\x1b[32m" ++ "unknown opcode " ++ "\x1b[0m" ++ show op) 0

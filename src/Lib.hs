@@ -7,20 +7,14 @@ where
 import           Data.Word                      ( Word16
                                                 , Word32
                                                 )
-import           RegisterFile
-import           Memory
 import           Data.Vector                    ( (//) )
 import           Debug.Trace
 import           Data.Bits
 import           Utils
 import           ALU
-
-data Registers = Registers {
-    rf :: RegisterFile -- register file
-  , imem :: Memory    -- instruction memory
-  , dmem :: Memory    -- data memory
-  , pc :: Word32      -- program counter
-  } deriving (Show)
+import           RegisterFile
+import           Memory
+import           Registers
 
 -- initial register set
 boot :: Memory -> Registers
@@ -32,8 +26,10 @@ debug_cycle regs = do
   putStrLn $ show (rf regs)
 
 -- run n cycles
-cycles :: Registers -> Int -> IO ()
-cycles regs 0     = debug_cycle regs
+cycles :: Registers -> Int -> IO Registers
+cycles regs 0 = do
+  debug_cycle regs
+  return regs
 cycles regs times = do
   debug_cycle regs
   cycles (cpu_cycle regs) (times - 1)

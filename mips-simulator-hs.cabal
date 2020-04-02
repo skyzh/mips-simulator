@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e08c3b69a90dba23ec409e25147f5058ae3a4b96e0048d58a8fce7bea3e2a305
+-- hash: 67dd63c784a6602bdf3185c52567d3004d4a582f392d6369f2bdc16556557136
 
 name:           mips-simulator-hs
 version:        0.1.0.0
@@ -30,6 +30,7 @@ library
       Lib
       Memory
       RegisterFile
+      Registers
       Utils
   other-modules:
       Paths_mips_simulator_hs
@@ -59,6 +60,7 @@ test-suite mips-simulator-hs-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
+      TestUtils
       Paths_mips_simulator_hs
   hs-source-dirs:
       test
