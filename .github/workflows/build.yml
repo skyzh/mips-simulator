@@ -1,0 +1,13 @@
+on: [push]
+
+name: build
+
+jobs:
+  build_and_test:
+    name: Haskell project
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: mstksg/setup-stack@v1
+      - name: Build and Test
+        run: stack test

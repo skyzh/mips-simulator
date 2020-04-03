@@ -15,7 +15,7 @@ course, I made this MIPS simulator.
     - [x] I type
     - [x] ALU test
     - [x] Compare and shift
-    - [ ] Support HI and LO
+    - [ ] Support HI and LO, multiply and division
     - [ ] J type
     - [ ] Memory operations
 * Multi-Cycle Processor

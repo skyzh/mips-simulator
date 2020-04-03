@@ -58,7 +58,7 @@ cpu_cycle regs = next_regs where
   typeR          = opcode == 0
   use_shamt      = (isShift funct) && typeR
 
-  -- register file operations
+  -- MODULE: Register file
   rf'            = rf regs
   rf_src1        = rs
   rf_src2        = if typeR then rt else 0
@@ -69,6 +69,7 @@ cpu_cycle regs = next_regs where
   rf_out2        = readRF rf' rf_src2
 
   -- STAGE: Execute
+  -- MODULE: ALU
   alu_op         = if typeR then funct else opcode
   ext_mode       = extMode alu_op
   alu_imm        = if ext_mode then imm_sign_ext else imm_zero_ext
@@ -76,9 +77,9 @@ cpu_cycle regs = next_regs where
   alu_src2       = if typeR then rf_out2 else alu_imm
   alu_out        = aluRead alu_op alu_src1 alu_src2
 
-  -- STAGE: memory
+  -- STAGE: Memory
 
-  -- STAGE: write back
+  -- STAGE: Write Back
 
   -- STEP: type annotation
   imm :: Word16
@@ -97,15 +98,15 @@ cpu_cycle regs = next_regs where
 
   -- STEP: debug info
   debug_info =
-    "opcode"
+    "opcode "
       ++ show opcode
-      ++ "rs"
+      ++ " rs "
       ++ show rs
-      ++ "rt"
+      ++ " rt "
       ++ show rt
-      ++ "rd"
+      ++ " rd "
       ++ show rd
-      ++ "funct"
+      ++ " funct "
       ++ show funct
-      ++ "imm"
+      ++ " imm "
       ++ show imm
