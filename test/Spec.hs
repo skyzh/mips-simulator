@@ -61,8 +61,37 @@ testArithmetic = TestCase $ do
       ]
     )
 
+testCompare = TestCase $ do
+  mem  <- loadIMem "test/naive-tests/3-basic-compare.hex"
+  regs <- cycles (boot mem) 50
+  let (RegisterFile rf') = rf regs
+  assertEqual
+    "registers"
+    (take 17 rf')
+    (fromList
+      [ 0
+      , 0xfffe0000
+      , 0
+      , 0
+      , 0x000f4240
+      , 0x001e8480
+      , 0x00000014
+      , 0xfffe7960
+      , 0x3d090000
+      , 0x24000000
+      , 0x000003d0
+      , 0x0
+      , 0x000003d0
+      , 0
+      , 0x1
+      , 0
+      , 0x1
+      ]
+    )
+
 tests = TestList
   [ TestLabel "test load instruction memory" testLoadIMem
   , TestLabel "test add"                     testAdd
   , TestLabel "test arithmetic"              testArithmetic
+  , TestLabel "test compare"                 testCompare
   ]

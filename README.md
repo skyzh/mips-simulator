@@ -14,6 +14,7 @@ course, I made this MIPS simulator.
     - [x] R type
     - [x] I type
     - [x] ALU test
+    - [x] Compare and shift
     - [ ] Support HI and LO
     - [ ] J type
     - [ ] Memory operations

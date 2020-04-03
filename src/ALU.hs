@@ -1,4 +1,11 @@
-module ALU where
+module ALU
+  ( signExt
+  , zeroExt
+  , extMode
+  , aluRead
+  , isShift
+  )
+where
 
 import           Prelude                 hiding ( xor )
 import           Data.Word                      ( Word16
@@ -28,6 +35,14 @@ extMode 0x24 = False
 extMode 0x25 = False
 extMode _    = True
 
+-- is shift
+-- True if reads shift amount field
+isShift :: Word32 -> Bool
+isShift 0x02 = True
+isShift 0x03 = True
+isShift 0x00 = True
+isShift _    = False
+
 --- read output value from ALU
 aluRead :: Word32 -> Word32 -> Word32 -> Word32
 -- add
@@ -35,8 +50,8 @@ aluRead 0x20 x y = x + y
 -- addu
 aluRead 0x21 x y = x + y
 -- addi
-aluRead 0x08  x y = x + y
-aluRead 0x09  x y = x + y
+aluRead 0x08 x y = x + y
+aluRead 0x09 x y = x + y
 -- sub
 aluRead 0x22 x y = x - y
 -- subu
@@ -66,23 +81,23 @@ aluRead 0x0E x y = x `xor` y
 --- lui
 aluRead 0x0F x y = y `shiftL` 16 + x
 --- sll
-aluRead 0x00 x y = x `shiftL` (maskShift y)
+aluRead 0x00 x y = y `shiftL` (maskShift x)
 --- sllv
-aluRead 0x04 x y = x `shiftL` (maskShift y)
+aluRead 0x04 x y = y `shiftL` (maskShift x)
 --- sra
 aluRead 0x03 x y = fromIntegral out where
-  x' :: Int32
-  x' = fromIntegral x
-  out = x' `shiftR` (maskShift y)
+  y' :: Int32
+  y'  = fromIntegral y
+  out = y' `shiftR` (maskShift x)
 --- srav
 aluRead 0x07 x y = fromIntegral out where
-  x' :: Int32
-  x' = fromIntegral x
-  out = x' `shiftR` (maskShift y)
+  y' :: Int32
+  y'  = fromIntegral y
+  out = y' `shiftR` (maskShift x)
 --- srl
-aluRead 0x02 x y = x `shiftR` (maskShift y)
+aluRead 0x02 x y = y `shiftR` (maskShift x)
 --- srlv
-aluRead 0x06 x y = x `shiftR` (maskShift y)
+aluRead 0x06 x y = y `shiftR` (maskShift x)
 --- slt
 aluRead 0x2A x y = if x' < y' then 1 else 0 where
   x' :: Int32
@@ -90,7 +105,7 @@ aluRead 0x2A x y = if x' < y' then 1 else 0 where
   x' = fromIntegral x
   y' = fromIntegral y
 --- sltu
-aluRead 0x29 x y = if x < y then 1 else 0
+aluRead 0x2B x y = if x < y then 1 else 0
 --- slti
 aluRead 0x0A x y = if x' < y' then 1 else 0 where
   x' :: Int32
@@ -104,4 +119,5 @@ aluRead 0x0B x y = if x < y then 1 else 0
 aluRead op _ _ =
   trace ("\x1b[32m" ++ "unknown opcode " ++ "\x1b[0m" ++ show op) 0
 
+maskShift :: Word32 -> Int
 maskShift y = fromIntegral (y .&. 0x1f)

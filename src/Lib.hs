@@ -50,11 +50,13 @@ cpu_cycle regs = next_regs where
   rs             = instruction `shiftR` (26 - 5) .&. 0x1f
   rt             = instruction `shiftR` (26 - 10) .&. 0x1f
   rd             = instruction `shiftR` (26 - 15) .&. 0x1f
+  shamt          = instruction `shiftR` (26 - 20) .&. 0x1f
   funct          = instruction .&. 0x3f
   imm            = fromIntegral instruction .&. 0xffff
   imm_sign_ext   = signExt imm
   imm_zero_ext   = zeroExt imm
   typeR          = opcode == 0
+  use_shamt      = (isShift funct) && typeR
 
   -- register file operations
   rf'            = rf regs
@@ -70,7 +72,7 @@ cpu_cycle regs = next_regs where
   alu_op         = if typeR then funct else opcode
   ext_mode       = extMode alu_op
   alu_imm        = if ext_mode then imm_sign_ext else imm_zero_ext
-  alu_src1       = rf_out1
+  alu_src1       = if use_shamt then shamt else rf_out1
   alu_src2       = if typeR then rf_out2 else alu_imm
   alu_out        = aluRead alu_op alu_src1 alu_src2
 
@@ -90,8 +92,9 @@ cpu_cycle regs = next_regs where
   new_pc = pc' + 4
   new_hi = hi regs
   new_lo = lo regs
-  next_regs = trace debug_info (Registers new_rf new_hi new_lo imem' new_dmem new_pc)
-  
+  next_regs =
+    trace debug_info (Registers new_rf new_hi new_lo imem' new_dmem new_pc)
+
   -- STEP: debug info
   debug_info =
     "opcode"
