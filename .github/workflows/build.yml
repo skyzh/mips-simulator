@@ -4,10 +4,12 @@ name: build
 
 jobs:
   build_and_test:
-    name: Haskell project
+    name: build and test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: mstksg/setup-stack@v1
-      - name: Build and Test
+      - name: build
+        run: stack build
+      - name: test
         run: stack test
