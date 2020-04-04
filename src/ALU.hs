@@ -99,25 +99,23 @@ aluRead 0x02 x y = y `shiftR` (maskShift x)
 --- srlv
 aluRead 0x06 x y = y `shiftR` (maskShift x)
 --- slt
-aluRead 0x2A x y = if x' < y' then 1 else 0 where
-  x' :: Int32
-  y' :: Int32
-  x' = fromIntegral x
-  y' = fromIntegral y
+aluRead 0x2A x y = slt x y
 --- sltu
 aluRead 0x2B x y = if x < y then 1 else 0
 --- slti
-aluRead 0x0A x y = if x' < y' then 1 else 0 where
-  x' :: Int32
-  y' :: Int32
-  x' = fromIntegral x
-  y' = fromIntegral y
+aluRead 0x0A x y = slt x y
 --- sltiu
 aluRead 0x0B x y = if x < y then 1 else 0
-
 --- other op
 aluRead op _ _ =
   trace ("\x1b[32m" ++ "unknown opcode " ++ "\x1b[0m" ++ show op) 0
 
 maskShift :: Word32 -> Int
 maskShift y = fromIntegral (y .&. 0x1f)
+
+--- slt utility
+slt x y = if x' < y' then 1 else 0 where
+  x' :: Int32
+  y' :: Int32
+  x' = fromIntegral x
+  y' = fromIntegral y

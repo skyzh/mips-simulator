@@ -16,6 +16,7 @@ course, I made this MIPS simulator.
     - [x] ALU test
     - [x] Compare and shift
     - [ ] Support HI and LO, multiply and division
+    - [x] Branch instruction
     - [ ] J type
     - [ ] Memory operations
 * Multi-Cycle Processor
@@ -29,4 +30,5 @@ course, I made this MIPS simulator.
 
 ## Reference
 
-* https://uweb.engr.arizona.edu/~ece369/Resources/spim/MIPSReference.pdf
+* https://uweb.engr.arizona.edu/~ece369/Resources/spim/MIPSReference.pdf (some opcode is wrong in this pdf)
+* http://www.mrc.uidaho.edu/mrc/people/jff/digital/MIPSir.html

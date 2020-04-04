@@ -12,9 +12,10 @@ import           Debug.Trace
 import           Data.Bits
 import           Utils
 import           ALU
+import           Branch
+import           Registers
 import           RegisterFile
 import           Memory
-import           Registers
 
 -- initial register set
 boot :: Memory -> Registers
@@ -63,21 +64,35 @@ cpu_cycle regs = next_regs where
   -- MODULE: Register file
   rf'            = rf regs
   rf_src1        = rs
-  rf_src2        = if typeR then rt else 0
+  rf_src2        = if typeR || is_branch then rt else 0
   rf_dest        = if typeR then rd else rt
   rf_data        = alu_out
-  rf_write       = True
+  rf_write       = True && not is_branch
   rf_out1        = readRF rf' rf_src1
   rf_out2        = readRF rf' rf_src2
 
+  -- MODULE: Branch
+  imm_offset     = imm_sign_ext `shiftL` 2
+  branch_map_op  = mapBranchOp opcode
+  branch_pc      = pc' + 4 + imm_offset
+  next_pc        = pc' + 4
+  alu_rt_val     = branchRtVal opcode rf_out2
+  is_branch      = isBranchOp opcode
+
   -- STAGE: Execute
   -- MODULE: ALU
-  alu_op         = if typeR then funct else opcode
   ext_mode       = extMode alu_op
+  alu_op         = if typeR then funct else branch_map_op
   alu_imm        = if ext_mode then imm_sign_ext else imm_zero_ext
   alu_src1       = if use_shamt then shamt else rf_out1
-  alu_src2       = if typeR then rf_out2 else alu_imm
-  alu_out        = aluRead alu_op alu_src1 alu_src2
+  alu_src2 | typeR     = rf_out2
+           | is_branch = alu_rt_val
+           | otherwise = alu_imm
+  alu_out     = aluRead alu_op alu_src1 alu_src2
+
+  -- MODULE: Branch
+  take_branch = takeBranch opcode rt alu_out
+  pc''        = if take_branch then branch_pc else next_pc
 
   -- STAGE: Memory
 
@@ -92,7 +107,7 @@ cpu_cycle regs = next_regs where
   -- CONSTRAINT: units can only be used once (e.g. aluRead)
   new_rf = if rf_write then new_rf' else rf'
     where new_rf' = updateRF rf' rf_dest rf_data
-  new_pc    = pc' + 4
+  new_pc    = pc''
   new_hi    = hi regs
   new_lo    = lo regs
   next_regs = Registers new_rf new_hi new_lo imem' new_dmem new_pc

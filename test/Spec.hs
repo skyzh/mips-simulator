@@ -21,6 +21,7 @@ main = hspec $ do
     it "add" $ testAdd
     it "simple arithmetic operation"  testArithmetic
     it "compare arithmetic operation" testCompare
+    it "branch instruction" testBranch
 
 testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"
@@ -91,5 +92,33 @@ testCompare = do
       , 0x1
       , 0
       , 0x1
+      ]
+    )
+
+
+testBranch = do
+  mem  <- loadIMem "test/naive-tests/4-branch.hex"
+  regs <- cycles (boot mem) 50
+  let (RegisterFile rf') = rf regs
+  shouldBe
+    (take 17 rf')
+    (fromList
+      [ 0
+      , 0
+      , 0x64
+      , 0x32
+      , 0x0
+      , 0xffffffce
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
       ]
     )

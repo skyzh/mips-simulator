@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f70f6276e03b69f3360725839749c3e77d53119fa868f70705a1d45a1a388a81
+-- hash: c43b2a5130fde8826cbb129f6a82511dcc39848bb91785bbe7b257a96ae21a81
 
 name:           mips-simulator-hs
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 library
   exposed-modules:
       ALU
+      Branch
       Lib
       Memory
       RegisterFile
