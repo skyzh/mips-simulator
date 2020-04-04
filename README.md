@@ -43,6 +43,12 @@ stack test
     - [ ] Tomasulo
     - [ ] Speculation
 
+## Circuit Design
+
+I'm still working on this. I've completed IF and decode stage.
+
+![image](https://user-images.githubusercontent.com/4198311/78424395-c9753200-769f-11ea-966b-bf0304bdd5e2.png)
+
 ## Reference
 
 * https://uweb.engr.arizona.edu/~ece369/Resources/spim/MIPSReference.pdf (some opcode is wrong in this pdf)
