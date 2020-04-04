@@ -1,7 +1,6 @@
 module Branch
   ( isBranchOp
   , branchRtVal
-  , mapBranchOp
   , takeBranch
   )
 where
@@ -22,8 +21,8 @@ isBranchOp 0x6 = True
 
 isBranchOp _   = False
 
-branchRtVal :: Word32 -> Word32 -> Word32
 -- for bgez, bltz, bgtz, blez, set rt to 0 or 1
+branchRtVal :: Word32 -> Word32 -> Word32
 -- blez = slt rs 1
 branchRtVal 0x6 _ = 1
 -- bgtz = !(slt rs 1)
@@ -32,18 +31,6 @@ branchRtVal 0x7 _ = 1
 -- bltz = slt rs 0
 branchRtVal 0x1 _ = 0
 branchRtVal _   rt = rt
-
-mapBranchOp :: Word32 -> Word32
--- beq, bne = sub
-mapBranchOp 0x4 = 0x22
-mapBranchOp 0x5 = 0x22
--- bgez, bltz = slt
-mapBranchOp 0x1 = 0x2A
--- bgtz, blez = slt
-mapBranchOp 0x6 = 0x2A
-mapBranchOp 0x7 = 0x2A
--- others as before
-mapBranchOp op  = op
 
 takeBranch :: Word32 -> Word32 -> Word32 -> Bool
 -- beq

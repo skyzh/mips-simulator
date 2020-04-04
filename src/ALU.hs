@@ -4,6 +4,7 @@ module ALU
   , extMode
   , aluRead
   , isShift
+  , mapALUOp
   )
 where
 
@@ -16,6 +17,25 @@ import           Data.Int                       ( Int16
                                                 )
 import           Debug.Trace
 import           Data.Bits
+
+-- map opcode to ALU operation
+mapALUOp :: Word32 -> Word32
+-- branch instructions
+-- beq, bne = sub
+mapALUOp 0x4 = 0x22
+mapALUOp 0x5 = 0x22
+-- bgez, bltz = slt
+mapALUOp 0x1 = 0x2A
+-- bgtz, blez = slt
+mapALUOp 0x6 = 0x2A
+mapALUOp 0x7 = 0x2A
+-- lb, lw, sb, sw = add
+mapALUOp 0x20 = 0x20
+mapALUOp 0x23 = 0x20
+mapALUOp 0x28 = 0x20
+mapALUOp 0x2B = 0x20
+-- other op as it is
+mapALUOp op  = op
 
 signExt :: Word16 -> Word32
 signExt x = fromIntegral signed where

@@ -30,8 +30,10 @@ stack test
     - [x] Compare and shift
     - [ ] Support HI and LO, multiply and division
     - [x] Branch instruction
+    - [ ] jump and link
     - [ ] J type
-    - [ ] Memory operations
+    - [x] Memory operations
+    - [ ] unsigned / high addr memory operations
 * Multi-Cycle Processor
     - [ ] Data path
     - [ ] Stalling
