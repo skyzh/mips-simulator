@@ -1,8 +1,10 @@
-import           Test.HUnit
 import           System.IO
 import           Prelude                 hiding ( take )
 import           Data.Vector
 import           Data.Word
+import           Test.Hspec
+import           Test.QuickCheck
+import           Control.Exception              ( evaluate )
 import           Lib
 import           Memory
 import           Utils
@@ -11,29 +13,33 @@ import           RegisterFile
 import           Registers
 
 main :: IO ()
-main = do
-  runTestTT tests
-  return ()
+main = hspec $ do
+  describe "unit test" $ do
+    it "load instruction memory" testLoadIMem
 
-testLoadIMem = TestCase $ do
+  describe "assembly test" $ do
+    it "add" $ testAdd
+    it "simple arithmetic operation"  testArithmetic
+    it "compare arithmetic operation" testCompare
+
+testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"
   let Memory content = mem
-  assertEqual "0 byte" (content ! 0) 0xef
-  assertEqual "1 byte" (content ! 1) 0xbe
-  assertEqual "2 byte" (content ! 2) 0xad
-  assertEqual "3 byte" (content ! 3) 0xde
+  shouldBe (content ! 0) 0xef
+  shouldBe (content ! 1) 0xbe
+  shouldBe (content ! 2) 0xad
+  shouldBe (content ! 3) 0xde
 
-testAdd = TestCase $ do
+testAdd = do
   mem  <- loadIMem "test/naive-tests/1-test-add.hex"
   regs <- cycles (boot mem) 10
-  assertEqual "result" (a2 regs) 300
+  shouldBe (a2 regs) 300
 
-testArithmetic = TestCase $ do
+testArithmetic = do
   mem  <- loadIMem "test/naive-tests/2-basic-arithmetic.hex"
   regs <- cycles (boot mem) 50
   let (RegisterFile rf') = rf regs
-  assertEqual
-    "registers"
+  shouldBe
     (take 22 rf')
     (fromList
       [ 0
@@ -61,12 +67,11 @@ testArithmetic = TestCase $ do
       ]
     )
 
-testCompare = TestCase $ do
+testCompare = do
   mem  <- loadIMem "test/naive-tests/3-basic-compare.hex"
   regs <- cycles (boot mem) 50
   let (RegisterFile rf') = rf regs
-  assertEqual
-    "registers"
+  shouldBe
     (take 17 rf')
     (fromList
       [ 0
@@ -88,10 +93,3 @@ testCompare = TestCase $ do
       , 0x1
       ]
     )
-
-tests = TestList
-  [ TestLabel "test load instruction memory" testLoadIMem
-  , TestLabel "test add"                     testAdd
-  , TestLabel "test arithmetic"              testArithmetic
-  , TestLabel "test compare"                 testCompare
-  ]

@@ -22,8 +22,10 @@ boot imem = Registers bootRF 0 0 imem bootMem 0
 
 -- debug current cycle information
 debug_cycle regs = do
+  return ()
+  {-
   putStrLn $ "PC = " ++ show (pc regs)
-  putStrLn $ show (rf regs)
+  putStrLn $ show (rf regs) -}
 
 -- run n cycles
 cycles :: Registers -> Int -> IO Registers
@@ -90,11 +92,10 @@ cpu_cycle regs = next_regs where
   -- CONSTRAINT: units can only be used once (e.g. aluRead)
   new_rf = if rf_write then new_rf' else rf'
     where new_rf' = updateRF rf' rf_dest rf_data
-  new_pc = pc' + 4
-  new_hi = hi regs
-  new_lo = lo regs
-  next_regs =
-    trace debug_info (Registers new_rf new_hi new_lo imem' new_dmem new_pc)
+  new_pc    = pc' + 4
+  new_hi    = hi regs
+  new_lo    = lo regs
+  next_regs = Registers new_rf new_hi new_lo imem' new_dmem new_pc
 
   -- STEP: debug info
   debug_info =
