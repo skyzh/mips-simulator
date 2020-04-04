@@ -1,5 +1,7 @@
 # MIPS-Simulator
 
+![build](https://github.com/skyzh/mips-simulator/workflows/build/badge.svg)
+
 A functional MIPS CPU simulator implemented in Haskell.
 
 A year ago, I implemented
@@ -8,6 +10,17 @@ I had long dreamed of using a functional programming language to express
 the circuit of a CPU. But at that time, implementing lazy-evalution
 in C++ is slow and painful. So the semester in Computer Architecture
 course, I made this MIPS simulator.
+
+## Usage
+
+Currently I haven't implemented a command-line interface for interacting with
+this simulator. You can only run tests or hack it yourself for now.
+
+Install [Stack](https://docs.haskellstack.org/en/stable/README/) and simply run:
+
+```bash
+stack test
+```
 
 ## Roadmap
 * Single-Cycle Processor

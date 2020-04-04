@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: mstksg/setup-stack@v1
+      - name: setup stack
+        run: stack --no-terminal --skip-ghc-check setup
       - name: build
-        run: stack build
+        run: stack --no-terminal --skip-ghc-check test --only-snapshot
       - name: test
-        run: stack test
+        run: stack --no-terminal --skip-ghc-check test
