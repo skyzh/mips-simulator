@@ -11,6 +11,10 @@ the circuit of a CPU. But at that time, implementing lazy-evalution
 in C++ is slow and painful. So the semester in Computer Architecture
 course, I made this MIPS simulator.
 
+As functional programming language works well in expressing this
+hardware circuit logic, I'm implementing [A MIPS CPU](https://github.com/skyzh/mips-cpu),
+just by directly translating Haskell into Verilog.
+
 ## Usage
 
 Currently I haven't implemented a command-line interface for interacting with

@@ -103,7 +103,7 @@ cpu_cycle regs = next_regs where
 
   -- STAGE: Write Back
   is_mem_load = memoryLoad opcode
-  rf_write    = True && not is_branch && not mem_write
+  rf_write    = not is_branch && not mem_write
   rf_data     = if is_mem_load then mem_out else alu_out
 
   -- STEP: type annotation
