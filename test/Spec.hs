@@ -5,7 +5,7 @@ import           Data.Word
 import           Test.Hspec
 import           Test.QuickCheck
 import           Control.Exception              ( evaluate )
-import           Lib
+import           CPU
 import           Memory
 import           Utils
 import           TestUtils

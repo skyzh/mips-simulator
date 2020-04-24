@@ -1,4 +1,4 @@
-module Lib
+module CPU
   ( cycles
   , boot
   )
@@ -16,6 +16,8 @@ import           Branch
 import           Registers
 import           RegisterFile
 import           Memory
+import           InstFetch                      ( stageInstFetch )
+import           StageReg
 
 -- initial register set
 boot :: Memory -> Registers
@@ -38,80 +40,87 @@ cycles regs times = do
 
 -- run one cycle
 cpu_cycle regs = next_regs where
-  imem'          = imem regs
-  dmem'          = dmem regs
+  imem'        = imem regs
+  dmem'        = dmem regs
 
   -- STAGE: Instruction Fetch
-  pc'            = pc regs
-  imem_addr      = pc'
-  imem_read_size = 32
-  instruction    = readMem imem' imem_addr imem_read_size
+  if_id_reg    = stageInstFetch (pc regs) imem'
+
+  instruction  = if_instruction if_id_reg
+  pc'          = if_pc if_id_reg
 
   -- STAGE: Decode
-  opcode         = instruction `shiftR` 26
-  rs             = instruction `shiftR` (26 - 5) .&. 0x1f
-  rt             = instruction `shiftR` (26 - 10) .&. 0x1f
-  rd             = instruction `shiftR` (26 - 15) .&. 0x1f
-  shamt          = instruction `shiftR` (26 - 20) .&. 0x1f
-  funct          = instruction .&. 0x3f
-  imm            = fromIntegral instruction .&. 0xffff
-  imm_sign_ext   = signExt imm
-  imm_zero_ext   = zeroExt imm
-  typeR          = opcode == 0
-  use_shamt      = (isShift funct) && typeR
+  -- REQUIRE: instruction, pc
+  opcode       = instruction `shiftR` 26
+  rs           = instruction `shiftR` (26 - 5) .&. 0x1f
+  rt           = instruction `shiftR` (26 - 10) .&. 0x1f
+  rd           = instruction `shiftR` (26 - 15) .&. 0x1f
+  shamt        = instruction `shiftR` (26 - 20) .&. 0x1f
+  funct        = instruction .&. 0x3f
+  imm          = fromIntegral instruction .&. 0xffff
+  imm_sign_ext = signExt imm
+  imm_zero_ext = zeroExt imm
+  typeR        = opcode == 0
+  use_shamt    = (isShift funct) && typeR
   jump_target =
     ((instruction `shiftL` 2) .&. 0x0fffffff) .|. (pc' .&. 0xf0000000)
 
   -- MODULE: Register file
-  rf'               = rf regs
-  rf_src1           = rs
-  rf_src2           = if typeR || is_branch || is_memory then rt else 0
-  rf_dest           | typeR = rd
-                    | opcode == 3 = 31 
-                    | otherwise = rt
-  rf_out1           = readRF rf' rf_src1
-  rf_out2           = readRF rf' rf_src2
+  rf'     = rf regs
+  rf_src1 = rs
+  rf_src2 = if typeR || is_branch || is_memory then rt else 0
+  rf_dest | typeR       = rd
+          | opcode == 3 = 31
+          | otherwise   = rt
+  rf_write   = not is_branch && not mem_write && opcode /= 2
+  rf_out1    = readRF rf' rf_src1
+  rf_out2    = readRF rf' rf_src2
 
   -- MODULE: Branch
-  imm_offset        = imm_sign_ext `shiftL` 2
-  branch_pc         = pc' + 4 + imm_offset
-  next_pc           = pc' + 4
+  imm_offset = imm_sign_ext `shiftL` 2
+  branch_pc  = pc' + 4 + imm_offset
+  next_pc | opcode == 2 || opcode == 3  = jump_target
+          | opcode == 0 && funct == 0x8 = rf_out1
+          | otherwise                   = pc' + 4
   branch_alu_rt_val = branchRtVal opcode rf_out2
   is_branch         = isBranchOp opcode
+  alu_branch_mask   = branchOut opcode rt
 
   -- MODULE: Memory
   mapped_op         = mapALUOp opcode
   is_memory         = isMemoryOp opcode
+  is_mem_load       = memoryLoad opcode
 
-  -- STAGE: Execute
   -- MODULE: ALU
-  ext_mode          = extMode alu_op
   alu_op            = if typeR then funct else mapped_op
   alu_imm           = if ext_mode then imm_sign_ext else imm_zero_ext
   alu_src1          = if use_shamt then shamt else rf_out1
   alu_src2 | typeR     = rf_out2
            | is_branch = branch_alu_rt_val
            | otherwise = alu_imm
+
+  -- MODULE: Memory
+  mem_data    = rf_out2
+  mem_write   = memoryStore opcode
+  mem_mode    = memoryMode opcode
+
+  -- STAGE: Execute
+  -- REQUIRE: alu_op, alu_src1, alu_src2, opcode, pc, alu_branch_mask
+  -- MODULE: ALU
+  ext_mode    = extMode alu_op
   alu_out     = aluRead alu_op alu_src1 alu_src2
 
   -- MODULE: Branch
-  take_branch = takeBranch opcode rt alu_out
-
-  pc''        | take_branch = branch_pc 
-              | opcode == 2 || opcode == 3 = jump_target
-              | opcode == 0 && funct == 0x8 = rf_out1
-              | otherwise =  next_pc
+  take_branch = is_branch && ((alu_out == 0) `xor` alu_branch_mask)
+  pc''        = if take_branch then branch_pc else next_pc
 
   -- STAGE: Memory
-  mem_write   = memoryStore opcode
+  -- REQUIRE: alu_out, opcode, pc
   mem_addr    = alu_out
-  mem_data    = rf_out2
-  mem_mode    = memoryMode opcode
   mem_out     = readMem dmem' mem_addr mem_mode
 
   -- STAGE: Write Back
-  is_mem_load = memoryLoad opcode
-  rf_write    = not is_branch && not mem_write && opcode /= 2
+  -- REQUIRE: mem_out, alu_out, opcode, pc
   rf_data | is_mem_load = mem_out
           | opcode == 3 = pc' + 4
           | otherwise   = alu_out

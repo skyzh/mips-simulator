@@ -1,6 +1,6 @@
 module Main where
 
-import           Lib
+import           CPU
 import           Utils
 
 main :: IO ()
