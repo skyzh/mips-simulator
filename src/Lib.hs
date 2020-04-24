@@ -38,33 +38,37 @@ cycles regs times = do
 
 -- run one cycle
 cpu_cycle regs = next_regs where
-  imem'             = imem regs
-  dmem'             = dmem regs
+  imem'          = imem regs
+  dmem'          = dmem regs
 
   -- STAGE: Instruction Fetch
-  pc'               = pc regs
-  imem_addr         = pc'
-  imem_read_size    = 32
-  instruction       = readMem imem' imem_addr imem_read_size
+  pc'            = pc regs
+  imem_addr      = pc'
+  imem_read_size = 32
+  instruction    = readMem imem' imem_addr imem_read_size
 
   -- STAGE: Decode
-  opcode            = instruction `shiftR` 26
-  rs                = instruction `shiftR` (26 - 5) .&. 0x1f
-  rt                = instruction `shiftR` (26 - 10) .&. 0x1f
-  rd                = instruction `shiftR` (26 - 15) .&. 0x1f
-  shamt             = instruction `shiftR` (26 - 20) .&. 0x1f
-  funct             = instruction .&. 0x3f
-  imm               = fromIntegral instruction .&. 0xffff
-  imm_sign_ext      = signExt imm
-  imm_zero_ext      = zeroExt imm
-  typeR             = opcode == 0
-  use_shamt         = (isShift funct) && typeR
+  opcode         = instruction `shiftR` 26
+  rs             = instruction `shiftR` (26 - 5) .&. 0x1f
+  rt             = instruction `shiftR` (26 - 10) .&. 0x1f
+  rd             = instruction `shiftR` (26 - 15) .&. 0x1f
+  shamt          = instruction `shiftR` (26 - 20) .&. 0x1f
+  funct          = instruction .&. 0x3f
+  imm            = fromIntegral instruction .&. 0xffff
+  imm_sign_ext   = signExt imm
+  imm_zero_ext   = zeroExt imm
+  typeR          = opcode == 0
+  use_shamt      = (isShift funct) && typeR
+  jump_target =
+    ((instruction `shiftL` 2) .&. 0x0fffffff) .|. (pc' .&. 0xf0000000)
 
   -- MODULE: Register file
   rf'               = rf regs
   rf_src1           = rs
   rf_src2           = if typeR || is_branch || is_memory then rt else 0
-  rf_dest           = if typeR then rd else rt
+  rf_dest           | typeR = rd
+                    | opcode == 3 = 31 
+                    | otherwise = rt
   rf_out1           = readRF rf' rf_src1
   rf_out2           = readRF rf' rf_src2
 
@@ -92,7 +96,11 @@ cpu_cycle regs = next_regs where
 
   -- MODULE: Branch
   take_branch = takeBranch opcode rt alu_out
-  pc''        = if take_branch then branch_pc else next_pc
+
+  pc''        | take_branch = branch_pc 
+              | opcode == 2 || opcode == 3 = jump_target
+              | opcode == 0 && funct == 0x8 = rf_out1
+              | otherwise =  next_pc
 
   -- STAGE: Memory
   mem_write   = memoryStore opcode
@@ -103,8 +111,10 @@ cpu_cycle regs = next_regs where
 
   -- STAGE: Write Back
   is_mem_load = memoryLoad opcode
-  rf_write    = not is_branch && not mem_write
-  rf_data     = if is_mem_load then mem_out else alu_out
+  rf_write    = not is_branch && not mem_write && opcode /= 2
+  rf_data | is_mem_load = mem_out
+          | opcode == 3 = pc' + 4
+          | otherwise   = alu_out
 
   -- STEP: type annotation
   imm :: Word16
@@ -120,19 +130,7 @@ cpu_cycle regs = next_regs where
   new_lo = lo regs
   new_dmem =
     if mem_write then updateMem dmem' mem_addr mem_data mem_mode else dmem'
-  next_regs = Registers new_rf new_hi new_lo imem' new_dmem new_pc
+  next_regs  = Registers new_rf new_hi new_lo imem' new_dmem new_pc
 
   -- STEP: debug info
-  debug_info =
-    "opcode "
-      ++ show opcode
-      ++ " rs "
-      ++ show rs
-      ++ " rt "
-      ++ show rt
-      ++ " rd "
-      ++ show rd
-      ++ " funct "
-      ++ show funct
-      ++ " imm "
-      ++ show imm
+  debug_info = "pc=" ++ show pc'

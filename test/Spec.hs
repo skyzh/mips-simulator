@@ -11,6 +11,25 @@ import           Utils
 import           TestUtils
 import           RegisterFile
 import           Registers
+import           Text.Printf
+import           Control.Exception
+import           System.CPUTime
+
+time :: IO t -> IO (t, Double)
+time a = do
+  start <- getCPUTime
+  v     <- a
+  end   <- getCPUTime
+  return (v, (fromIntegral (end - start)) / (10 ^ 12))
+
+testCycle :: Registers -> Int -> IO Registers
+testCycle regs times = do
+  (result, run_time) <- time (cycles regs times)
+  printf "%d cycles in %0.3f sec, %0.3f cycle/sec\n"
+         times
+         run_time
+         (fromIntegral times / run_time)
+  return result
 
 main :: IO ()
 main = hspec $ do
@@ -24,6 +43,7 @@ main = hspec $ do
     it "branch instruction"           testBranch
     it "memory instruction"           testSimpleMem
     it "memory instruction in loop"   testMem
+    it "jump"                         testJump
 
 testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"
@@ -35,12 +55,12 @@ testLoadIMem = do
 
 testAdd = do
   mem  <- loadIMem "test/naive-tests/1-test-add.hex"
-  regs <- cycles (boot mem) 10
+  regs <- testCycle (boot mem) 10
   shouldBe (a2 regs) 300
 
 testArithmetic = do
   mem  <- loadIMem "test/naive-tests/2-basic-arithmetic.hex"
-  regs <- cycles (boot mem) 50
+  regs <- testCycle (boot mem) 50
   let (RegisterFile rf') = rf regs
   shouldBe
     (take 22 rf')
@@ -72,7 +92,7 @@ testArithmetic = do
 
 testCompare = do
   mem  <- loadIMem "test/naive-tests/3-basic-compare.hex"
-  regs <- cycles (boot mem) 50
+  regs <- testCycle (boot mem) 50
   let (RegisterFile rf') = rf regs
   shouldBe
     (take 17 rf')
@@ -100,7 +120,7 @@ testCompare = do
 
 testBranch = do
   mem  <- loadIMem "test/naive-tests/4-branch.hex"
-  regs <- cycles (boot mem) 50
+  regs <- testCycle (boot mem) 50
   let (RegisterFile rf') = rf regs
   shouldBe
     (take 17 rf')
@@ -110,13 +130,13 @@ testBranch = do
 
 testSimpleMem = do
   mem  <- loadIMem "test/naive-tests/5-simple-mem.hex"
-  regs <- cycles (boot mem) 50
+  regs <- testCycle (boot mem) 50
   let (RegisterFile rf') = rf regs
   shouldBe (take 7 rf') (fromList [0, 0, 0, 0, 0x10, 0x10, 0x10])
 
 testMem = do
   mem  <- loadIMem "test/naive-tests/6-mem.hex"
-  regs <- cycles (boot mem) 5800
+  regs <- testCycle (boot mem) 10000
   let (RegisterFile rf') = rf regs
   shouldBe
     (take 24 rf')
@@ -145,5 +165,48 @@ testMem = do
       , 0x200
       , 0
       , 0xffffff00
+      ]
+    )
+
+
+testJump = do
+  mem  <- loadIMem "test/naive-tests/7-jump.hex"
+  regs <- testCycle (boot mem) 50
+  let (RegisterFile rf') = rf regs
+  shouldBe
+    rf'
+    (fromList
+      [ 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0x91d
+      , 0xe9
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0x5b25
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0
+      , 0x4
       ]
     )
