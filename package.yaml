@@ -23,6 +23,7 @@ dependencies:
 - vector
 - hspec
 - QuickCheck
+- criterion
 
 library:
   source-dirs: src
@@ -46,5 +47,17 @@ tests:
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
+    dependencies:
+    - mips-simulator-hs
+
+benchmarks:
+  mips-simulator-hs-bench:
+    main:                Bench.hs
+    source-dirs:         bench
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -O2
     dependencies:
     - mips-simulator-hs

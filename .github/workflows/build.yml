@@ -12,6 +12,8 @@ jobs:
       - name: setup stack
         run: stack --no-terminal --skip-ghc-check setup
       - name: build
-        run: stack --no-terminal --skip-ghc-check test --only-snapshot
+        run: stack --no-terminal --skip-ghc-check build
       - name: test
         run: stack --no-terminal --skip-ghc-check test
+      - name: benchmark
+        run: stack --no-terminal --skip-ghc-check bench
