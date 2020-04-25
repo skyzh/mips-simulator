@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 08b31c2d0426a631714d99aaa07e40762599037cf6a74beb0a96cb83cbb57cf1
+-- hash: aecba3be6b821fd7fd6cda94601838656e9c46417491f5e000c68dec24d73301
 
 name:           mips-simulator-hs
 version:        0.1.0.0
@@ -29,10 +29,13 @@ library
       ALU
       Branch
       CPU
+      InstDecode
       InstFetch
       Memory
       RegisterFile
       Registers
+      StageExecute
+      StageMem
       StageReg
       Utils
   other-modules:
@@ -40,10 +43,7 @@ library
   hs-source-dirs:
       src
   build-depends:
-      QuickCheck
-    , base >=4.7 && <5
-    , criterion
-    , hspec
+      base >=4.7 && <5
     , vector
   default-language: Haskell2010
 
@@ -55,10 +55,7 @@ executable mips-simulator-hs-exe
       app
   ghc-options: -threaded -rtsopts -with-rtsopts=-N
   build-depends:
-      QuickCheck
-    , base >=4.7 && <5
-    , criterion
-    , hspec
+      base >=4.7 && <5
     , mips-simulator-hs
     , vector
   default-language: Haskell2010
@@ -75,7 +72,6 @@ test-suite mips-simulator-hs-test
   build-depends:
       QuickCheck
     , base >=4.7 && <5
-    , criterion
     , hspec
     , mips-simulator-hs
     , vector
@@ -90,10 +86,8 @@ benchmark mips-simulator-hs-bench
       bench
   ghc-options: -threaded -rtsopts -with-rtsopts=-N -O2
   build-depends:
-      QuickCheck
-    , base >=4.7 && <5
+      base >=4.7 && <5
     , criterion
-    , hspec
     , mips-simulator-hs
     , vector
   default-language: Haskell2010

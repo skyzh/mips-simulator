@@ -21,9 +21,6 @@ description:         Please see the README on GitHub at <https://github.com/skyz
 dependencies:
 - base >= 4.7 && < 5
 - vector
-- hspec
-- QuickCheck
-- criterion
 
 library:
   source-dirs: src
@@ -49,6 +46,8 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - mips-simulator-hs
+    - hspec
+    - QuickCheck
 
 benchmarks:
   mips-simulator-hs-bench:
@@ -61,3 +60,4 @@ benchmarks:
     - -O2
     dependencies:
     - mips-simulator-hs
+    - criterion

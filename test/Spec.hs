@@ -38,12 +38,12 @@ main = hspec $ do
 
   describe "assembly test" $ do
     it "add" $ testAdd
-    it "simple arithmetic operation"  testArithmetic
+    {-it "simple arithmetic operation"  testArithmetic
     it "compare arithmetic operation" testCompare
     it "branch instruction"           testBranch
     it "memory instruction"           testSimpleMem
     it "memory instruction in loop"   testMem
-    it "jump"                         testJump
+    it "jump"                         testJump-}
 
 testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"
