@@ -3,6 +3,7 @@ module Branch
   , branchRtVal
   , takeBranch
   , branchOut
+  , isLinkOp
   )
 where
 import           Data.Word                      ( Word32 )
@@ -21,6 +22,10 @@ isBranchOp 0x7 = True
 isBranchOp 0x6 = True
 
 isBranchOp _   = False
+
+isLinkOp :: Word32 -> Bool
+isLinkOp 0x3 = True
+isLinkOp _ = False
 
 -- for bgez, bltz, bgtz, blez, set rt to 0 or 1
 branchRtVal :: Word32 -> Word32 -> Word32

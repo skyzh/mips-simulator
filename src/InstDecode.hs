@@ -9,9 +9,10 @@ import           Memory
 import           ALU
 import           Branch
 import           RegisterFile
+import           Forward                        ( forward, ForwardInfo)
 
-stageInstDecode :: IF_ID_Reg -> RegisterFile -> ID_EX_Reg
-stageInstDecode if_id_reg rf = id_ex_reg where
+stageInstDecode :: IF_ID_Reg -> RegisterFile -> ForwardInfo -> ID_EX_Reg
+stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   instruction  = if_instruction if_id_reg
   pc'          = if_pc if_id_reg
 
@@ -57,10 +58,24 @@ stageInstDecode if_id_reg rf = id_ex_reg where
   ext_mode          = extMode alu_op
   alu_op            = if typeR then funct else mapped_op
   alu_imm           = if ext_mode then imm_sign_ext else imm_zero_ext
-  alu_src1          = if use_shamt then shamt else rf_out1
-  alu_src2 | typeR     = rf_out2
-           | is_branch = branch_alu_rt_val
-           | otherwise = alu_imm
+
+  -- MODULE: Forward
+  forward_op1       = forward forward_info rf_src1
+  forward_op2       = forward forward_info rf_src2
+  forward_result (x, _, _) = x
+  forward_depends (_, x, _) = x
+  forward_stall (_, _, x) = x
+
+
+  alu_src1 | forward_depends forward_op1 = forward_result forward_op1
+           | use_shamt                   = shamt
+           | opcode == 3                 = pc'
+           | otherwise                   = rf_out1
+  alu_src2 | forward_depends forward_op2 = forward_result forward_op2
+           | typeR                       = rf_out2
+           | is_branch                   = branch_alu_rt_val
+           | opcode == 3                 = 4
+           | otherwise                   = alu_imm
 
   -- MODULE: Memory
   mem_data  = rf_out2

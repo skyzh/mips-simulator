@@ -5,6 +5,7 @@ module ALU
   , aluRead
   , isShift
   , mapALUOp
+  , isArithmeticOp
   )
 where
 
@@ -63,6 +64,18 @@ isShift 0x03 = True
 isShift 0x00 = True
 isShift _    = False
 
+isArithmeticOp :: Word32 -> Bool
+isArithmeticOp 0x0 = True
+isArithmeticOp 0x08 = True
+isArithmeticOp 0x09 = True
+isArithmeticOp 0x0C = True
+isArithmeticOp 0x0D = True
+isArithmeticOp 0x0E = True
+isArithmeticOp 0x0F = True
+isArithmeticOp 0x0A = True
+isArithmeticOp 0x0B = True
+isArithmeticOp _ = False
+
 --- read output value from ALU
 aluRead :: Word32 -> Word32 -> Word32 -> Word32
 -- add
@@ -71,6 +84,7 @@ aluRead 0x20 x y = x + y
 aluRead 0x21 x y = x + y
 -- addi
 aluRead 0x08 x y = x + y
+-- addiu
 aluRead 0x09 x y = x + y
 -- sub
 aluRead 0x22 x y = x - y

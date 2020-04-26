@@ -21,6 +21,7 @@ import           InstDecode                     ( stageInstDecode )
 import           StageExecute                   ( stageExecute )
 import           StageMem                       ( stageMem )
 import           StageReg
+import           Forward                        ( ForwardInfo(..) )
 
 -- initial register set
 boot :: Memory -> Registers
@@ -53,17 +54,28 @@ cycles regs times = do
 -- run one cycle
 cpu_cycle :: Registers -> Registers
 cpu_cycle regs = trace debug_info next_regs where
-  imem'           = imem regs
-  dmem'           = dmem regs
+  imem'          = imem regs
+  dmem'          = dmem regs
 
   -- STAGE: Instruction Fetch
-  curr_if_id_reg  = if_id regs
-  next_if_id_reg  = stageInstFetch (pc regs) imem'
+  curr_if_id_reg = if_id regs
+  next_if_id_reg = stageInstFetch (pc regs) imem'
 
   -- STAGE: Decode
-  rf'             = rf regs
-  curr_id_ex_reg  = id_ex regs
-  next_id_ex_reg  = stageInstDecode curr_if_id_reg rf'
+  rf'            = rf regs
+  curr_id_ex_reg = id_ex regs
+  next_id_ex_reg = stageInstDecode curr_if_id_reg rf' forward_info
+  forward_info   = ForwardInfo (ex_opcode next_ex_mem_reg)
+                               (ex_rf_dest next_ex_mem_reg)
+                               (ex_alu_out next_ex_mem_reg)
+                               (mem_opcode next_mem_wb_reg)
+                               (mem_rf_dest next_mem_wb_reg)
+                               (mem_alu_out next_mem_wb_reg)
+                               (mem_out next_mem_wb_reg)
+                               opcode
+                               rf_dest
+                               rf_data
+
 
   -- STAGE: Execute
   -- REQUIRE: alu_op, alu_src1, alu_src2, opcode, pc, alu_branch_mask
@@ -87,9 +99,8 @@ cpu_cycle regs = trace debug_info next_regs where
   rf_write        = not is_branch && not mem_write && opcode /= 2
   is_mem_load     = memoryLoad opcode
   mem_mem_out     = mem_out curr_mem_wb_reg
-  
+
   rf_data | is_mem_load = mem_mem_out
-          | opcode == 3 = pc' + 4
           | otherwise   = alu_out
 
   -- STEP: update register value
