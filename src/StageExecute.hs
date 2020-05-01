@@ -3,14 +3,16 @@ module StageExecute
   )
 where
 import           Data.Bits
+import           Data.Word                      ( Word32 )
+import           Debug.Trace
 import           StageReg
 import           Memory
 import           ALU
 import           Branch
 import           RegisterFile
 
-stageExecute :: ID_EX_Reg -> EX_MEM_Reg
-stageExecute id_ex_reg = ex_mem_reg where
+stageExecute :: ID_EX_Reg -> (EX_MEM_Reg, (Bool, Word32))
+stageExecute id_ex_reg = (ex_mem_reg, branch_resolve) where
   -- MODULE: ALU
   alu_op          = id_alu_op id_ex_reg
   alu_src1        = id_alu_src1 id_ex_reg
@@ -30,8 +32,14 @@ stageExecute id_ex_reg = ex_mem_reg where
   take_branch     = is_branch && ((alu_out == 0) `xor` alu_branch_mask)
   pc''            = if take_branch then branch_pc else next_pc
 
+  is_force_jump   = id_force_jump id_ex_reg
+
   ex_mem_reg      = EX_MEM_Reg alu_out
                                opcode
                                pc''
                                (id_rf_dest id_ex_reg)
                                (id_mem_data id_ex_reg)
+
+  branch_resolve | take_branch /= id_branch_taken id_ex_reg = (False, pc'')
+                 | is_force_jump = (False, next_pc)
+                 | otherwise     = (True, 0)

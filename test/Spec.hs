@@ -40,10 +40,10 @@ main = hspec $ do
     it "add" $ testAdd
     it "simple arithmetic operation"  testArithmetic
     it "compare arithmetic operation" testCompare
-    {-it "branch instruction"           testBranch
+    it "branch instruction"           testBranch
     it "memory instruction"           testSimpleMem
     it "memory instruction in loop"   testMem
-    it "jump"                         testJump-}
+    it "jump"                         testJump
 
 testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"
@@ -171,7 +171,7 @@ testMem = do
 
 testJump = do
   mem  <- loadIMem "test/naive-tests/7-jump.hex"
-  regs <- testCycle (boot mem) 50
+  regs <- testCycle (boot mem) 100
   let (RegisterFile rf') = rf regs
   shouldBe
     rf'

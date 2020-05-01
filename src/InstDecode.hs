@@ -9,7 +9,10 @@ import           Memory
 import           ALU
 import           Branch
 import           RegisterFile
-import           Forward                        ( forward, ForwardInfo)
+import           Forward                        ( forward
+                                                , ForwardInfo
+                                                )
+import           Debug.Trace                    ( trace )
 
 stageInstDecode :: IF_ID_Reg -> RegisterFile -> ForwardInfo -> ID_EX_Reg
 stageInstDecode if_id_reg rf forward_info = id_ex_reg where
@@ -36,8 +39,12 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   rf_dest | typeR       = rd
           | opcode == 3 = 31
           | otherwise   = rt
-  rf_out1    = readRF rf rf_src1
-  rf_out2    = readRF rf rf_src2
+  rf_out1_prev = readRF rf rf_src1
+  rf_out2_prev = readRF rf rf_src2
+  rf_out1 | forward_depends forward_op1 = forward_result forward_op1
+          | otherwise                   = rf_out1_prev
+  rf_out2 | forward_depends forward_op2 = forward_result forward_op2
+          | otherwise                   = rf_out2_prev
 
   -- MODULE: Branch
   imm_offset = imm_sign_ext `shiftL` 2
@@ -48,6 +55,7 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   branch_alu_rt_val = branchRtVal opcode rf_out2
   is_branch         = isBranchOp opcode
   alu_branch_mask   = branchOut opcode rt
+  force_jump = opcode == 2 || opcode == 3 || (opcode == 0 && funct == 0x8)
 
   -- MODULE: Memory
   mapped_op         = mapALUOp opcode
@@ -65,20 +73,24 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   forward_result (x, _, _) = x
   forward_depends (_, x, _) = x
   forward_stall (_, _, x) = x
+  debug_info =
+    "forward_op1 = "
+      ++ show forward_op1
+      ++ " forward op2 = "
+      ++ show forward_op2
 
 
-  alu_src1 | forward_depends forward_op1 = forward_result forward_op1
-           | use_shamt                   = shamt
-           | opcode == 3                 = pc'
-           | otherwise                   = rf_out1
-  alu_src2 | forward_depends forward_op2 = forward_result forward_op2
-           | typeR                       = rf_out2
-           | is_branch                   = branch_alu_rt_val
-           | opcode == 3                 = 4
-           | otherwise                   = alu_imm
+  alu_src1 | use_shamt   = shamt
+           | opcode == 3 = pc'
+           | otherwise   = rf_out1
+  alu_src2 | typeR       = rf_out2
+           | is_branch   = branch_alu_rt_val
+           | opcode == 3 = 4
+           | otherwise   = alu_imm
 
   -- MODULE: Memory
-  mem_data  = rf_out2
+  mem_data | forward_depends forward_op2 = forward_result forward_op2
+           | otherwise                   = rf_out2
 
   id_ex_reg = ID_EX_Reg alu_op
                         alu_src1
@@ -90,3 +102,5 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
                         next_pc
                         rf_dest
                         mem_data
+                        (if_branch_taken if_id_reg)
+                        force_jump

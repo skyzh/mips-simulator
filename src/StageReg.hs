@@ -7,10 +7,11 @@ data IF_ID_Reg = IF_ID_Reg {
     if_instruction :: Word32
     -- program counter 
   , if_pc :: Word32
+  , if_branch_taken :: Bool
   } deriving (Show)
 
 defaultIFIDReg :: IF_ID_Reg
-defaultIFIDReg = IF_ID_Reg 0 0
+defaultIFIDReg = IF_ID_Reg 0 0 False
 
 data ID_EX_Reg = ID_EX_Reg {
     id_alu_op :: Word32,
@@ -22,10 +23,12 @@ data ID_EX_Reg = ID_EX_Reg {
     id_branch_pc :: Word32,
     id_next_pc :: Word32,
     id_rf_dest :: Word32,
-    id_mem_data :: Word32
+    id_mem_data :: Word32,
+    id_branch_taken :: Bool,
+    id_force_jump :: Bool
   } deriving (Show)
 
-defaultIDEXReg = ID_EX_Reg 0 0 0 0 0 False 0 0 0 0
+defaultIDEXReg = ID_EX_Reg 0 0 0 0 0 False 0 0 0 0 False False
 
 data EX_MEM_Reg = EX_MEM_Reg {
     ex_alu_out :: Word32,

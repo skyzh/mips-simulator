@@ -5,6 +5,7 @@ where
 
 import           StageReg
 import           Memory
+import           Debug.Trace
 
 stageMem :: EX_MEM_Reg -> Memory -> (MEM_WB_Reg, Memory)
 stageMem ex_mem_reg dmem' = (mem_wb_reg, new_dmem) where
@@ -16,6 +17,8 @@ stageMem ex_mem_reg dmem' = (mem_wb_reg, new_dmem) where
   mem_write = memoryStore opcode
   mem_mode  = memoryMode opcode
   mem_out   = readMem dmem' mem_addr mem_mode
+  debug_info =
+    "M[" ++ show mem_addr ++ "] = " ++ show mem_data ++ " " ++ show mem_write
   new_dmem =
     if mem_write then updateMem dmem' mem_addr mem_data mem_mode else dmem'
   mem_wb_reg = MEM_WB_Reg (ex_pc ex_mem_reg) mem_out alu_out opcode rf_dest

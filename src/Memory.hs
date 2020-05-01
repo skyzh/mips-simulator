@@ -63,6 +63,7 @@ readMem (Memory mem) addr 32 =
   (b 3) * 2 ^ 24 + (b 2) * 2 ^ 16 + (b 1) * 2 ^ 8 + (b 0) where
   b :: Word32 -> Word32
   b p = convertMemSize $ mem ! fromIntegral (addr + p)
+readMem _ _ 0  = 0
 readMem _ _ sz = error $ "mem: unsupported word size " ++ show sz
 
 updateMem :: Memory -> Word32 -> Word32 -> Int -> Memory
@@ -78,4 +79,5 @@ updateMem (Memory mem) addr mem_data 32 =
        ] where
   b :: Int -> Word8
   b p = fromIntegral $ mem_data `shiftR` (fromIntegral p * 8)
-updateMem _ _ _ sz = error $ "mem: unsupported word size " ++ show sz
+updateMem mem _ _ 0  = mem
+updateMem _   _ _ sz = error $ "mem: unsupported word size " ++ show sz

@@ -15,6 +15,5 @@ main = defaultMain
   [
    -- notice the lazy pattern match here!
     env setupEnv $ \ ~cycle_with_mem ->
-      bgroup "mem" [bench "1000000 cycles" $ whnfIO (cycle_with_mem 1000000)]
+      bgroup "mem" [bench "1000000 (1MHz) cycles" $ whnfIO (cycle_with_mem 1000000)]
   ]
-
