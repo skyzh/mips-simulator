@@ -39,10 +39,12 @@ stack test
     - [x] Memory operations
     - [ ] unsigned / high addr memory operations
 * Multi-Cycle Processor
-    - [ ] Data path
-    - [ ] Stalling
-    - [ ] Forwarding
-    - [ ] Branch Prediction
+    - [x] Data path
+    - [x] Stalling
+    - [x] Forwarding
+    - [x] Branch Prediction
+    - [ ] Advanced Branch Predictor
+    - [ ] Hazard Tests
 * Dynamic Scheduling
     - [ ] Tomasulo
     - [ ] Speculation
