@@ -15,6 +15,15 @@ As functional programming language works well in expressing this
 hardware circuit logic, I'm implementing [A MIPS CPU](https://github.com/skyzh/mips-cpu),
 just by directly translating Haskell into Verilog.
 
+All CPU and CPU simulators I've made are listed below.
+
+|                                                                     | Technique                                      | Implementation |
+|---------------------------------------------------------------------|------------------------------------------------|----------------|
+| [RISC-V v1](https://github.com/skyzh/RISCV-Simulator/tree/pipeline) | 5-level pipeline  simulator                 | C++            |
+| [RISC-V v2](https://github.com/skyzh/RISCV-Simulator)               | dynamic scheduling simulator <br> Tomasulo + Speculation | C++            |
+| [MIPS](https://github.com/skyzh/mips-simulator)                     | 5-level pipeline  simulator                             | Haskell        |
+| [MIPS](https://github.com/skyzh/mips-cpu)                           | 5-level pipeline CPU (Not yet open-sourced)        | Verilog        |
+
 ## Usage
 
 Currently I haven't implemented a command-line interface for interacting with
@@ -45,15 +54,6 @@ stack test
     - [x] Branch Prediction
     - [ ] Advanced Branch Predictor
     - [ ] Hazard Tests
-* Dynamic Scheduling
-    - [ ] Tomasulo
-    - [ ] Speculation
-
-## Circuit Design
-
-I'm still working on this. I've completed IF and decode stage.
-
-![image](https://user-images.githubusercontent.com/4198311/78424395-c9753200-769f-11ea-966b-bf0304bdd5e2.png)
 
 ## Reference
 

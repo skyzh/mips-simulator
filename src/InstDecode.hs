@@ -35,7 +35,7 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
 
   -- MODULE: Register file
   rf_src1 = rs
-  rf_src2 = if typeR || is_branch || is_memory then rt else 0
+  rf_src2 = if typeR || is_branch || is_mem_store then rt else 0
   rf_dest | typeR       = rd
           | opcode == 3 = 31
           | otherwise   = rt
@@ -61,6 +61,7 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   mapped_op         = mapALUOp opcode
   is_memory         = isMemoryOp opcode
   is_mem_load       = memoryLoad opcode
+  is_mem_store      = memoryStore opcode
 
   -- MODULE: ALU
   ext_mode          = extMode alu_op
