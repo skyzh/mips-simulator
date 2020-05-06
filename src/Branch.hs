@@ -4,6 +4,7 @@ module Branch
   , takeBranch
   , branchOut
   , isLinkOp
+  , overrideRt
   )
 where
 import           Data.Word                      ( Word32 )
@@ -25,18 +26,26 @@ isBranchOp _   = False
 
 isLinkOp :: Word32 -> Bool
 isLinkOp 0x3 = True
-isLinkOp _ = False
+isLinkOp _   = False
 
 -- for bgez, bltz, bgtz, blez, set rt to 0 or 1
-branchRtVal :: Word32 -> Word32 -> Word32
+branchRtVal :: Word32 -> Word32
 -- blez = slt rs 1
-branchRtVal 0x6 _  = 1
+branchRtVal 0x6 = 1
 -- bgtz = !(slt rs 1)
-branchRtVal 0x7 _  = 1
+branchRtVal 0x7 = 1
 -- bgez = !(slt rs 0)
 -- bltz = slt rs 0
-branchRtVal 0x1 _  = 0
-branchRtVal _   rt = rt
+branchRtVal 0x1 = 0
+
+overrideRt :: Word32 -> Bool
+-- blez
+overrideRt 0x6 = True
+-- bgtz
+overrideRt 0x7 = True
+-- bgez bltz
+overrideRt 0x1 = True
+overrideRt _   = False
 
 branchOut :: Word32 -> Word32 -> Bool
 -- beq

@@ -43,7 +43,8 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   rf_out2_prev = readRF rf rf_src2
   rf_out1 | forward_depends forward_op1 = forward_result forward_op1
           | otherwise                   = rf_out1_prev
-  rf_out2 | forward_depends forward_op2 = forward_result forward_op2
+  rf_out2 | override_rt                 = branch_alu_rt_val
+          | forward_depends forward_op2 = forward_result forward_op2
           | otherwise                   = rf_out2_prev
 
   -- MODULE: Branch
@@ -52,7 +53,8 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   next_pc | opcode == 2 || opcode == 3  = jump_target
           | opcode == 0 && funct == 0x8 = rf_out1
           | otherwise                   = pc' + 4
-  branch_alu_rt_val = branchRtVal opcode rf_out2
+  override_rt       = overrideRt opcode
+  branch_alu_rt_val = branchRtVal opcode
   is_branch         = isBranchOp opcode
   alu_branch_mask   = branchOut opcode rt
   force_jump = opcode == 2 || opcode == 3 || (opcode == 0 && funct == 0x8)
@@ -84,10 +86,9 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   alu_src1 | use_shamt   = shamt
            | opcode == 3 = pc'
            | otherwise   = rf_out1
-  alu_src2 | typeR       = rf_out2
-           | is_branch   = branch_alu_rt_val
-           | opcode == 3 = 4
-           | otherwise   = alu_imm
+  alu_src2 | typeR || is_branch = rf_out2
+           | opcode == 3        = 4
+           | otherwise          = alu_imm
 
   -- MODULE: Memory
   mem_data | forward_depends forward_op2 = forward_result forward_op2
