@@ -25,10 +25,10 @@ time a = do
 testCycle :: Registers -> Int -> IO Registers
 testCycle regs times = do
   (result, run_time) <- time (cycles regs times)
-  printf "%d cycles in %0.3f sec, %0.3f cycle/sec\n"
+  {-printf "%d cycles in %0.3f sec, %0.3f cycle/sec\n"
          times
          run_time
-         (fromIntegral times / run_time)
+         (fromIntegral times / run_time)-}
   return result
 
 main :: IO ()
@@ -44,6 +44,31 @@ main = hspec $ do
     it "memory instruction"           testSimpleMem
     it "memory instruction in loop"   testMem
     it "jump"                         testJump
+  
+  describe "hazard test" $ do
+    it "data hazard" $ testDataHazard
+    it "load use hazard" $ testLoadUseHazard
+    it "control hazard" $ testControlHazard
+
+testDataHazard = do
+  mem  <- loadIMem "test/hazard-tests/data-hazard.hex"
+  regs <- testCycle (boot mem) 50
+  shouldBe (a0 regs) 0x64
+  shouldBe (a1 regs) 0x6400
+  shouldBe (a2 regs) 0x9600
+
+testControlHazard = do
+  mem  <- loadIMem "test/hazard-tests/control-hazard.hex"
+  regs <- testCycle (boot mem) 40
+  shouldBe (a0 regs) 0x3e8
+  shouldBe (ra regs) 0x18
+
+testLoadUseHazard = do
+  mem  <- loadIMem "test/hazard-tests/load-use.hex"
+  regs <- testCycle (boot mem) 50
+  shouldBe (a0 regs) 0x898
+  shouldBe (a1 regs) 0x834
+  shouldBe (a2 regs) 0x2000
 
 testLoadIMem = do
   mem <- loadIMem "test/naive-tests/0-imem.hex"

@@ -14,8 +14,8 @@ import           Forward                        ( forward
                                                 )
 import           Debug.Trace                    ( trace )
 
-stageInstDecode :: IF_ID_Reg -> RegisterFile -> ForwardInfo -> ID_EX_Reg
-stageInstDecode if_id_reg rf forward_info = id_ex_reg where
+stageInstDecode :: IF_ID_Reg -> RegisterFile -> ForwardInfo -> (ID_EX_Reg, Bool)
+stageInstDecode if_id_reg rf forward_info = (id_ex_reg, stall) where
   instruction  = if_instruction if_id_reg
   pc'          = if_pc if_id_reg
 
@@ -76,17 +76,21 @@ stageInstDecode if_id_reg rf forward_info = id_ex_reg where
   forward_result (x, _, _) = x
   forward_depends (_, x, _) = x
   forward_stall (_, _, x) = x
+  stall = (alu_use_rf_out_1 && forward_stall forward_op1) || (alu_use_rf_out_2 && forward_stall forward_op2)
+
   debug_info =
     "forward_op1 = "
       ++ show forward_op1
       ++ " forward op2 = "
       ++ show forward_op2
 
+  alu_use_rf_out_1 = not use_shamt && opcode /= 3
+  alu_use_rf_out_2 = typeR || is_branch
 
   alu_src1 | use_shamt   = shamt
            | opcode == 3 = pc'
            | otherwise   = rf_out1
-  alu_src2 | typeR || is_branch = rf_out2
+  alu_src2 | alu_use_rf_out_2 = rf_out2
            | opcode == 3        = 4
            | otherwise          = alu_imm
 

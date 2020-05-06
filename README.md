@@ -53,7 +53,7 @@ stack test
     - [x] Forwarding
     - [x] Branch Prediction
     - [ ] Advanced Branch Predictor
-    - [ ] Hazard Tests
+    - [x] Hazard Tests
 
 ## Reference
 

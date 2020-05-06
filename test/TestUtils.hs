@@ -18,4 +18,4 @@ tN r n | n <= 7 = (rf_vec r) ! (8 + n)
 sN r n = (rf_vec r) ! (16 + n)
 k0 r = (rf_vec r) ! 26
 k1 r = (rf_vec r) ! 7
-
+ra r = (rf_vec r) ! 31
