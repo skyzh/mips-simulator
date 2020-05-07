@@ -64,19 +64,19 @@ cpu_cycle regs = next_regs where
   if_pc | not correct_branch_prediction = branch_jump_target
         | otherwise                     = pc regs
   stage_if_out = stageInstFetch if_pc imem'
-  next_if_id_reg | stage_id_stall = curr_if_id_reg
+  next_if_id_reg | out_id_stall = curr_if_id_reg
                  | otherwise      = fst stage_if_out
-  if_next_pc | stage_id_stall = if_pc
+  if_next_pc | out_id_stall = if_pc
              | otherwise      = snd stage_if_out
 
   -- STAGE: Decode
   rf'            = rf regs
   curr_id_ex_reg = id_ex regs
   stage_id_out   = stageInstDecode curr_if_id_reg rf' forward_info
-  stage_id_stall = snd stage_id_out
+  out_id_stall = snd stage_id_out
   stage_id_regs  = fst stage_id_out
   next_id_ex_reg
-    | not correct_branch_prediction || stage_id_stall = defaultIDEXReg
+    | not correct_branch_prediction || out_id_stall = defaultIDEXReg
     | otherwise = stage_id_regs
   forward_info = ForwardInfo (ex_opcode next_ex_mem_reg)
                              (ex_rf_dest next_ex_mem_reg)
@@ -151,5 +151,5 @@ cpu_cycle regs = next_regs where
       ++ "\n"
       ++ show branch_resolve_result
       ++ "\n"
-      ++ "id_stall=" ++ show stage_id_stall ++ "\n"
+      ++ "id_stall=" ++ show out_id_stall ++ "\n"
       ++ "branch=" ++ show branch_resolve_result ++ "\n"
