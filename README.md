@@ -22,7 +22,7 @@ All CPU and CPU simulators I've made are listed below.
 | [RISC-V v1](https://github.com/skyzh/RISCV-Simulator/tree/pipeline) | 5-stage pipeline  simulator                 | C++            |
 | [RISC-V v2](https://github.com/skyzh/RISCV-Simulator)               | dynamic scheduling simulator <br> Tomasulo + Speculation | C++            |
 | [MIPS](https://github.com/skyzh/mips-simulator)                     | 5-stage pipeline  simulator                             | Haskell        |
-| [MIPS](https://github.com/skyzh/mips-cpu)                           | 5-stage pipeline CPU (Not yet open-sourced)        | Verilog        |
+| [MIPS](https://github.com/skyzh/mips-cpu)                           | 5-stage pipeline CPU         | Verilog        |
 
 ## Usage
 
